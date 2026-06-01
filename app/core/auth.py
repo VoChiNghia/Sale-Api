@@ -1,5 +1,5 @@
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import jwt, JWTError
 from sqlalchemy.orm import Session
 
@@ -8,13 +8,26 @@ from app.core.security import SECRET_KEY, ALGORITHM
 from app.repositories import user_repository
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+bearer_scheme = HTTPBearer(
+    description="Paste access_token only. Swagger will add the Bearer prefix."
+)
+
+
+def _normalize_token(credentials: HTTPAuthorizationCredentials):
+    token = credentials.credentials.strip()
+
+    if token.lower().startswith("bearer "):
+        token = token[7:].strip()
+
+    return token
 
 
 def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
     db: Session = Depends(get_db)
 ):
+    token = _normalize_token(credentials)
+
     try:
         payload = jwt.decode(
             token,
