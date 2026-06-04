@@ -233,7 +233,7 @@ def seed_categories(db):
 
         category = Category(
             category_name=name,
-            description=f"Danh muc {name}",
+            description=f"Danh mục {name}",
             status="ACTIVE",
         )
         db.add(category)
@@ -288,10 +288,10 @@ def seed_customers(db):
             continue
 
         customer = Customer(
-            full_name=f"Khach hang {index}",
+            full_name=f"Khách hàng {index}",
             email=email,
             phone=f"091{index:07d}",
-            address=f"Dia chi khach hang {index}",
+            address=f"Địa chỉ khách hàng {index}",
         )
         db.add(customer)
         created += 1
