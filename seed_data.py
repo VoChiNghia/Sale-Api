@@ -53,21 +53,21 @@ USERS = [
 ]
 
 CATEGORY_NAMES = [
-    "Den LED",
-    "Den tro sang",
-    "Den bi cau",
-    "Den xi nhan",
-    "Den hau",
-    "Den demi",
-    "Coi xe", 
-    "Guong xe",
-    "Op bao ve",
-    "Po do",
+    "Đèn LED",
+    "Đèn trợ sáng",
+    "Đèn bi cầu",
+    "Đèn xi nhan",
+    "Đèn hậu",
+    "Đèn demi",
+    "Còi xe",
+    "Gương xe",
+    "Ốp bảo vệ",
+    "Pô độ",
     "Tem xe",
-    "Phu kien dien",
-    "Sac USB xe may",
-    "Camera hanh trinh",
-    "Do choi xe khac",
+    "Phụ kiện điện",
+    "Sạc USB xe máy",
+    "Camera hành trình",
+    "Đồ chơi xe khác",
 ]
 
 PRODUCT_SUFFIXES = [
@@ -261,7 +261,7 @@ def seed_products(db):
             product = Product(
                 category_id=category.category_id,
                 product_name=product_name,
-                description=f"San pham {category.category_name} mau {suffix}",
+                description=f"Sản phẩm {category.category_name} màu {suffix}",
                 price=Decimal(PRODUCT_PRICES[index - 1]),
                 stock_quantity=20 + index * 5,
                 image_url=(
