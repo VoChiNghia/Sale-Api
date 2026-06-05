@@ -5,6 +5,8 @@ import os
 from app.core.security import hash_password
 from app.db.base import Base
 from app.db.database import SessionLocal, engine
+from app.models.cart_item_model import CartItem
+from app.models.cart_model import Cart
 from app.models.category_model import Category
 from app.models.customer_model import Customer
 from app.models.order_detail_model import OrderDetail
@@ -300,6 +302,58 @@ def seed_customers(db):
     return created
 
 
+def seed_carts(db):
+    exists = db.query(Cart).first()
+
+    if exists:
+        return 0, 0
+
+    customer = db.query(Customer).order_by(Customer.customer_id).first()
+    customer_user = db.query(User).filter(User.username == "customer").first()
+    products = db.query(Product).filter(
+        Product.status == "ACTIVE",
+        Product.stock_quantity > 0
+    ).order_by(Product.product_id).limit(3).all()
+
+    if not customer or not products:
+        return 0, 0
+
+    cart = Cart(
+        user_id=customer_user.user_id if customer_user else None,
+        customer_id=customer.customer_id,
+        status="OPEN",
+    )
+    db.add(cart)
+    db.flush()
+
+    item_count = 0
+    quantities = [1, 2, 1]
+
+    for product, quantity in zip(products, quantities):
+        quantity = min(quantity, product.stock_quantity)
+
+        if quantity <= 0:
+            continue
+
+        unit_price = Decimal(product.price)
+        cart_item = CartItem(
+            cart_id=cart.cart_id,
+            product_id=product.product_id,
+            quantity=quantity,
+            unit_price=unit_price,
+            total_price=unit_price * quantity,
+        )
+        db.add(cart_item)
+        item_count += 1
+
+    if item_count == 0:
+        db.rollback()
+        return 0, 0
+
+    db.commit()
+    return 1, item_count
+
+
 def seed_report_data(db):
     exists = db.query(Order).filter(
         Order.order_code.like("RPTDEMO%")
@@ -404,6 +458,7 @@ def seed():
         product_count = seed_products(db)
         customer_count = seed_customers(db)
         report_order_count = seed_report_data(db)
+        cart_count, cart_item_count = seed_carts(db)
         bootstrap_admin = promote_bootstrap_admin(db)
 
         print("Seed data success")
@@ -412,6 +467,8 @@ def seed():
         print(f"Products created: {product_count}")
         print(f"Customers created: {customer_count}")
         print(f"Report orders created: {report_order_count}")
+        print(f"Carts created: {cart_count}")
+        print(f"Cart items created: {cart_item_count}")
 
         if bootstrap_admin:
             print(f"Bootstrap admin promoted: {bootstrap_admin}")

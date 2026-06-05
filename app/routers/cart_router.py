@@ -15,7 +15,12 @@ router = APIRouter(
 
 @router.get("/open/{customer_id}")
 def get_open_cart(customer_id: int, db: Session = Depends(get_db), current_user = Depends(require_customer)):
-    cart = cart_service.get_open_cart(db, customer_id, current_user)
+    try:
+        cart = cart_service.get_open_cart(db, customer_id, current_user)
+    except PermissionError as ex:
+        return error_response(message=str(ex), status_code=403)
+    except ValueError as ex:
+        return error_response(message=str(ex), status_code=404)
 
     if not cart:
         return error_response(message="Open cart not found", status_code=404)

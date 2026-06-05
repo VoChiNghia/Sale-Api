@@ -6,6 +6,18 @@ from app.schemas.cart_schema import AddCartItem
 
 def get_open_cart(db: Session, customer_id: int, current_user=None):
     cart = cart_repository.get_open_cart(db, customer_id)
+    user_id = current_user.user_id if current_user else None
+
+    if not cart:
+        return cart_repository.create_cart(db, customer_id, user_id=user_id)
+
+    if (
+        cart
+        and current_user
+        and current_user.role == "CUSTOMER"
+        and cart.user_id is None
+    ):
+        return cart_repository.assign_cart_user(db, cart, current_user.user_id)
 
     if (
         cart
@@ -13,7 +25,7 @@ def get_open_cart(db: Session, customer_id: int, current_user=None):
         and current_user.role == "CUSTOMER"
         and cart.user_id != current_user.user_id
     ):
-        return None
+        raise PermissionError("You do not have permission to view this cart")
 
     return cart
 

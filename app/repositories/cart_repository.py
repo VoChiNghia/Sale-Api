@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 
 from app.models.cart_model import Cart
 from app.models.cart_item_model import CartItem
+from app.models.customer_model import Customer
 from app.models.product_model import Product
 
 
@@ -17,8 +18,20 @@ def get_by_id(db: Session, cart_id: int):
 
 
 def create_cart(db: Session, customer_id: int, user_id: int | None = None):
+    customer = db.query(Customer).filter(Customer.customer_id == customer_id).first()
+
+    if not customer:
+        raise ValueError("Customer not found")
+
     cart = Cart(customer_id=customer_id, user_id=user_id, status="OPEN")
     db.add(cart)
+    db.commit()
+    db.refresh(cart)
+    return cart
+
+
+def assign_cart_user(db: Session, cart: Cart, user_id: int):
+    cart.user_id = user_id
     db.commit()
     db.refresh(cart)
     return cart
@@ -54,7 +67,7 @@ def add_item(
     if not cart:
         cart = create_cart(db, customer_id, user_id=user_id)
     elif user_id is not None and cart.user_id is None:
-        cart.user_id = user_id
+        cart = assign_cart_user(db, cart, user_id)
     elif user_id is not None and cart.user_id != user_id:
         raise ValueError("You do not have permission to update this cart")
 
