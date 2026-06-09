@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from app.db.database import engine
 
 from app.db.base import Base
+from app.middleware.json_body import LenientJsonBodyMiddleware
 # Import models so SQLAlchemy registers all tables before create_all.
 import app.models.user_model  # noqa: F401
 import app.models.category_model  # noqa: F401
@@ -22,6 +23,8 @@ app = FastAPI(
     description="API for managing sales data",
     version="1.0.0"
 )
+
+app.add_middleware(LenientJsonBodyMiddleware)
 
 app.include_router(category_router.router)
 app.include_router(product_router.router)
