@@ -46,7 +46,8 @@ def add_item(
     customer_id: int,
     product_id: int,
     quantity: int,
-    user_id: int | None = None
+    user_id: int | None = None,
+    user_role: str | None = None
 ):
     if quantity <= 0:
         raise ValueError("Quantity must be greater than 0")
@@ -64,11 +65,14 @@ def add_item(
 
     cart = get_open_cart(db, customer_id)
 
+    is_customer_user = user_role == "CUSTOMER"
+
     if not cart:
-        cart = create_cart(db, customer_id, user_id=user_id)
-    elif user_id is not None and cart.user_id is None:
+        cart_user_id = user_id if is_customer_user else None
+        cart = create_cart(db, customer_id, user_id=cart_user_id)
+    elif is_customer_user and cart.user_id is None:
         cart = assign_cart_user(db, cart, user_id)
-    elif user_id is not None and cart.user_id != user_id:
+    elif is_customer_user and cart.user_id != user_id:
         raise ValueError("You do not have permission to update this cart")
 
     cart_item = db.query(CartItem).filter(

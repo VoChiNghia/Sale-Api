@@ -52,5 +52,6 @@ def add_item_to_cart(db: Session, data: AddCartItem, current_user):
         customer_id=data.customer_id,
         product_id=data.product_id,
         quantity=data.quantity,
-        user_id=current_user.user_id
+        user_id=current_user.user_id,
+        user_role=current_user.role
     )
