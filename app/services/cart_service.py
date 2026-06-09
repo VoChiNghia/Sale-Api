@@ -47,11 +47,13 @@ def get_cart_items(db: Session, cart_id: int, current_user=None):
 
 
 def add_item_to_cart(db: Session, data: AddCartItem, current_user):
+    user_role = current_user.role.strip().upper() if current_user.role else None
+
     return cart_repository.add_item(
         db=db,
         customer_id=data.customer_id,
         product_id=data.product_id,
         quantity=data.quantity,
         user_id=current_user.user_id,
-        user_role=current_user.role
+        user_role=user_role
     )

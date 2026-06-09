@@ -11,7 +11,8 @@ def create_order_from_cart(
     db: Session,
     cart_id: int,
     note: str | None = None,
-    user_id: int | None = None
+    user_id: int | None = None,
+    user_role: str | None = None
 ):
     cart = db.query(Cart).filter(Cart.cart_id == cart_id).first()
 
@@ -21,10 +22,12 @@ def create_order_from_cart(
     if cart.status != "OPEN":
         raise Exception("Giỏ hàng không còn mở")
 
-    if user_id is not None and cart.user_id not in (None, user_id):
+    is_customer_user = user_role and user_role.strip().upper() == "CUSTOMER"
+
+    if is_customer_user and cart.user_id not in (None, user_id):
         raise Exception("Bạn không có quyền tạo đơn hàng từ giỏ hàng này")
 
-    if user_id is not None and cart.user_id is None:
+    if is_customer_user and cart.user_id is None:
         cart.user_id = user_id
 
     cart_items = db.query(CartItem).filter(CartItem.cart_id == cart_id).all()
@@ -47,7 +50,7 @@ def create_order_from_cart(
 
     order = Order(
         order_code=f"ORD{datetime.now().strftime('%Y%m%d%H%M%S')}",
-        user_id=user_id or cart.user_id,
+        user_id=user_id if is_customer_user else cart.user_id,
         customer_id=cart.customer_id,
         total_amount=total_amount,
         status="PENDING",

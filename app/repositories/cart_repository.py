@@ -65,7 +65,7 @@ def add_item(
 
     cart = get_open_cart(db, customer_id)
 
-    is_customer_user = user_role == "CUSTOMER"
+    is_customer_user = user_role and user_role.strip().upper() == "CUSTOMER"
 
     if not cart:
         cart_user_id = user_id if is_customer_user else None

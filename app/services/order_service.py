@@ -8,11 +8,18 @@ def create_order_from_cart(
     note: str | None = None,
     current_user=None
 ):
+    user_role = (
+        current_user.role.strip().upper()
+        if current_user and current_user.role
+        else None
+    )
+
     return order_repository.create_order_from_cart(
         db=db,
         cart_id=cart_id,
         note=note,
-        user_id=current_user.user_id if current_user else None
+        user_id=current_user.user_id if current_user else None,
+        user_role=user_role
     )
 
 
